@@ -1,17 +1,24 @@
 class MapsController < ApplicationController
 	def index
+    # このあとで@mapに関するフォームを作るので、Mapインスタンスを作っておきます(でないとエラーになる)
+    @map = Map.new
+    @maps = Map.all
 	end
 
-	def map
-		results = Geocoder.search(params[:address])
-  	@latlng = results.first.coordinates
-  	# これでmap.js.erbで、経度緯度情報が入った@latlngを使える。
+  def create
+    @map = Map.new(map_params)
+    if @map.save
+      redirect_to maps_url
+    else
+      @maps = Map.all
+      render 'maps/index'
+    end
+  end
 
-  	# respond_to以下の記述によって、
-  	# remote: trueのアクセスに対して、
-  	# map.js.erbが変えるようになります。
-  	respond_to do |format|
-  		format.js
-  	end
-	end
+  private
+
+  # ストロングパラメーター
+  def map_params
+    params.require(:map).permit(:address, :latitude, :longitude, :title, :comment)
+  end
 end
